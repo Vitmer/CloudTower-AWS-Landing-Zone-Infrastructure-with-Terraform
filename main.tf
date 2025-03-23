@@ -36,6 +36,8 @@ module "ecs" {
   db_address = module.rds.db_address
   bucket_name = module.s3.bucket_name
   ecs_instance_type = var.ecs_instance_type
+  aws_region  = var.aws_region
+  execution_role_arn = module.iam.ecs_role_arn
 }
 
 module "rds" {
@@ -60,8 +62,7 @@ module "route53" {
 }
 
 module "iam" {
-  source = "./modules/iam"
-  vpc_id = module.vpc.vpc_id  
+  source = "./modules/iam" 
 }
 
 module "cloudwatch" {
@@ -77,4 +78,35 @@ module "ses" {
 module "sns" {
   source     = "./modules/sns"
   topic_name = var.sns_topic_name
+
+  email_address = var.email_address
+}
+
+module "organizations" {
+  source = "./modules/organizations"
+}
+
+data "aws_organizations_organization" "main" {}
+
+module "policies" {
+  source              = "./modules/policies"
+  deny_s3_public_json = file("${path.module}/modules/policies/deny_s3_public.json")
+  ou_id               = module.organizations.dev_ou_id
+  root_id = data.aws_organizations_organization.main.roots[0].id
+}
+
+module "logging" {
+  source             = "./modules/logging"
+  vpc_id  = module.vpc.vpc_id
+}
+
+module "security" {
+  source = "./modules/security"
+
+  config_bucket_name = module.logging.central_logs_bucket_name
+}
+
+module "billing" {
+  source       = "./modules/billing"
+  budget_limit = var.monthly_budget_limit
 }

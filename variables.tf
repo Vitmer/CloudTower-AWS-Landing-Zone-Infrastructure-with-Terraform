@@ -65,3 +65,20 @@ variable "sns_topic_name" {
   type        = string
   default     = "alerts-topic"
 }
+
+variable "org_trail_bucket" {
+  description = "Имя S3-бакета для централизованного CloudTrail"
+  type        = string
+  default     = "my-default-cloudtrail-logs"
+}
+
+variable "monthly_budget_limit" {
+  description = "Ограничение по бюджету в USD"
+  type        = string
+  default     = "100"
+}
+
+variable "email_address" {
+  description = "Email address for SNS notifications"
+  type        = string
+}

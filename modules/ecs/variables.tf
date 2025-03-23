@@ -22,3 +22,13 @@ variable "ecs_instance_type" {
   description = "Тип инстанса для ECS"
   type        = string
 }
+
+variable "aws_region" {
+  description = "Регион AWS"
+  type        = string
+}
+
+variable "execution_role_arn" {
+  type        = string
+  description = "IAM Execution Role ARN"
+}

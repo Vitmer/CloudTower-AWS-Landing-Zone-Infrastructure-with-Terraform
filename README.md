@@ -1,106 +1,114 @@
-# Terraform AWS Infrastructure Blueprint
 
-## 📌 Project Description
-This project uses **Terraform** to automatically deploy a **complete AWS infrastructure**, including:
+# 🌐 Terraform AWS Landing Zone (Enterprise-Grade)
 
-✅ **ECS (Elastic Container Service)** – Cluster for managing containers  
-✅ **EC2 (Elastic Compute Cloud)** – Virtual machines  
-✅ **RDS (Relational Database Service)** – Database (PostgreSQL, MySQL)  
-✅ **S3 (Simple Storage Service)** – Data storage  
-✅ **IAM (Identity and Access Management)** – User and access management  
-✅ **CloudWatch** – Monitoring and logging  
-✅ **Route 53** – Domain and DNS management  
-✅ **SES (Simple Email Service)** – AWS email service  
-✅ **SNS (Simple Notification Service)** – Notification system  
+## 📌 Description
 
-## 🏗️ **Architecture**
-This project creates a **fully connected AWS infrastructure** where:
+This project is a fully modular, production-grade **AWS Landing Zone** built using **Terraform**. It mirrors the architecture of **AWS Control Tower**, but offers complete flexibility and customization. It is designed to support multi-account governance, centralized security, cost monitoring, and scalable workloads.
 
-- **ECS** connects to **RDS** and **S3**
-- **EC2** and **ECS** use IAM for access control
-- **Route 53** configures a domain for the Load Balancer
-- **CloudWatch** monitors service metrics
-- **SNS and SES** are used for notifications
+---
 
-## 📂 **Project Structure**
-```plaintext
-Terraform AWS Infrastructure Blueprint/
-│── modules/
-│   ├── backend/       # Modul S3 + DynamoDB
-│   ├── ecs/           # ECS Module
-│   ├── rds/           # RDS Module
-│   ├── s3/            # S3 Module
-│   ├── iam/           # IAM Module
-│   ├── route53/       # Route 53 Module
-│   ├── ses/           # SES Module
-│   ├── sns/           # SNS Module
-│   ├── cloudwatch/    # CloudWatch Module
-│── main.tf            # Main Terraform file
-│── variables.tf       # Terraform variables
-│── terraform.tfvars   # Configuration variables
-│── outputs.tf         # Terraform output variables
-│── README.md          # This file
+## 🧱 Architecture
+
+### 🔹 Core Modules:
+
+| Module           | Purpose                                           |
+|------------------|---------------------------------------------------|
+| `backend`        | Terraform state management (S3 + DynamoDB)        |
+| `vpc`            | Core networking, subnets, IGW/NAT                 |
+| `ecs`            | ECS Cluster, Task Definition, ALB                 |
+| `rds`            | PostgreSQL database in private subnets            |
+| `s3`             | Object storage                                    |
+| `iam`            | IAM roles and permissions                         |
+| `logging`        | CloudTrail to S3 and CloudWatch                   |
+| `cloudwatch`     | ECS monitoring and log groups                     |
+| `security`       | GuardDuty, Security Hub, AWS Config               |
+| `organizations`  | AWS Organizations, Organizational Units           |
+| `policies`       | SCP enforcement for account governance            |
+| `route53`        | DNS zones and records                             |
+| `ses`            | Email verification and sending                    |
+| `sns`            | Event notifications (Budget, CloudWatch)          |
+| `billing`        | Budget alerts with SNS/email                      |
+
+---
+
+## 🔐 Security & Monitoring
+
+- ✅ Organization-wide `CloudTrail` with multi-region support
+- ✅ `AWS Config` enabled and recording
+- ✅ Centralized `GuardDuty` and `Security Hub`
+- ✅ Least-privilege IAM roles with execution policies
+- ✅ SCPs applied to OU for strict account-level control
+
+---
+
+## ☁️ Multi-Account Design
+
+- AWS Organizations with `Dev` Organizational Unit
+- Separate `DevAccount` with custom role
+- SCPs enforced to block risky behavior
+- Ready to extend to `Prod`, `Security`, `Audit` accounts
+
+---
+
+## 📡 Notifications
+
+- Cost alerting via `aws_budgets_budget`
+- Email alerts via `SNS` and `SES`
+- Ready for CloudWatch Alarms + Lambda trigger
+
+---
+
+## 🧪 CI/CD (Recommended)
+
+- GitHub Actions: `terraform init`, `plan`, `apply`
+- Lint: `tflint`, `tfsec`
+- `terraform fmt` + `pre-commit` hooks
+- Container image deploy via `aws ecs update-service`
+
+---
+
+## 🔧 Requirements
+
+- Terraform ≥ 1.3.0
+- AWS CLI with credentials
+- Variables defined via `terraform.tfvars` or `variables.tf`
+
+---
+
+## 🗂️ Project Structure
+
+```
+.
+├── backend/
+├── billing/
+├── cloudwatch/
+├── ecs/
+├── iam/
+├── logging/
+├── organizations/
+├── policies/
+├── rds/
+├── route53/
+├── s3/
+├── security/
+├── ses/
+├── sns/
+├── vpc/
+└── main.tf
 ```
 
-## 🚀 **How to Deploy the Infrastructure**
-### **1️⃣ Install Terraform and AWS CLI**
-Before running the deployment, ensure you have:
-- [Terraform](https://www.terraform.io/downloads)
-- [AWS CLI](https://aws.amazon.com/cli/)
+---
 
-Set up **AWS CLI**:
-```sh
-aws configure
-```
+## 🏁 Getting Started
 
-### **2️⃣ Initialize Terraform**
-```sh
+```bash
 terraform init
-```
-
-### **3️⃣ Run `terraform plan` to preview the changes**
-```sh
 terraform plan
-```
-
-### **4️⃣ Deploy the infrastructure**
-```sh
-terraform apply -auto-approve
-```
-
-### **5️⃣ Verify the deployment**
-To display all created resources:
-```sh
-terraform output
-```
-
-## 🛑 **How to Destroy the Infrastructure**
-To remove all AWS resources, run:
-```sh
-terraform destroy -auto-approve
+terraform apply
 ```
 
 ---
 
-## 🛠 **Additional Configuration**
-### **Variables (`terraform.tfvars`)**
-You can define configuration values in `terraform.tfvars`:
-```hcl
-aws_region     = "eu-central-1"
-vpc_cidr       = "10.0.0.0/16"
-public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
-private_subnets = ["10.0.3.0/24", "10.0.4.0/24"]
-ecs_instance_type = "t3.micro"
-db_instance_type = "db.t3.micro"
-db_username      = "tfadmin"
-db_password      = "P@ssw0rd!"
-s3_bucket_name   = "my-s3-bucket-terraform"
-route53_domain   = "mydomain.com"
-ses_domain       = "mydomain.com"
-sns_topic_name   = "alerts-topic"
-```
+## 📃 License
 
----
-
-## 🏆 **You're all set!**
-Now you have a **fully automated AWS infrastructure** using Terraform.  
+MIT License. Free to use, extend, and deploy in production.
